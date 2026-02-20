@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link href="style.css" rel="stylesheet">
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <title> TURAN Water </title>
+</head>
+<body>
+    <header class="logo-container">
+        <img class="logo" src="./assets/logo.png" alt="TURAN Water">
+    </header>
+
+    <form class="form" id="order_form" novalidate>
+
+        <section class="form-unit">
+            <h1>Адрес доставки</h1>
+
+            <label>Адрес</label>
+            <input type="text" id="address" placeholder="Введите адрес доставки">
+
+            <div id="suggestions"></div>
+
+            <div class="toggle">
+                <label class="switch">
+                    <input type="checkbox" id="private_house">
+                    <span class="slider"></span>
+                </label>
+                <span>Частный дом</span>
+            </div>
+
+            <div class="_accommodation" id="apartment_fields">
+                <div class="field">
+                    <label>Подъезд</label>
+                    <input type="number" id="entrance" min="1">
+                </div>
+                <div class="field">
+                    <label>Этаж</label>
+                    <input type="number" id="floor" min="1">
+                </div>
+                <div class="field">
+                    <label>Квартира</label>
+                    <input type="number" id="apartment" min="1">
+                </div>
+            </div>
+        </section>
+
+        <section class="form-unit">
+            <h1>Количество бутылей</h1>
+            <input type="number" id="bottles" min="1">
+        </section>
+
+        <section class="form-unit">
+            <div class="toggle">
+                <label class="switch">
+                    <input type="checkbox" id="handle_bottle">
+                    <span class="slider"></span>
+                </label>
+                <span>Бутылка с ручкой</span>
+            </div>
+
+            <h1>Комментарий</h1>
+            <input type="text" id="comment">
+        </section>
+
+        <button class="order" id="order_btn" type="button">
+            Заказать доставку
+        </button>
+    </form>
+
+    <div id="success_overlay" class="success-overlay">
+        <div class="success-box">
+            <div class="checkmark">✓</div>
+            <p>Заказ принят!</p>
+        </div>
+    </div>
+
+
+    <script src="index.js"></script>
+</body>
+</html>
