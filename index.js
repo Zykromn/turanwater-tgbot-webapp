@@ -1,10 +1,4 @@
 const tg = window.Telegram.WebApp;
-
-if (!tg || !tg.initData) {
-    console.error("Telegram WebApp undefined");
-    handleTechnicalError();
-}
-
 tg.expand();
 
 const BBOX = "69.3300,53.2500~69.4500,53.3300";
