@@ -15,15 +15,29 @@ const orderBtn = document.getElementById("order_btn");
 
 let debounceTimer;
 
-window.onerror = function() {
-    handleTechnicalError();
+window.onerror = function(message, source, lineno, colno, error) {
+    const errorDetails = {
+        action: "error",
+        error_type: "JS_EXCEPTION",
+        message: message,
+        line: lineno,
+        column: colno,
+        source: source ? source.split('/').pop() : "unknown"
+    };
+
+    // Отправляем детальный отчет боту
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.sendData(JSON.stringify(errorDetails));
+        window.Telegram.WebApp.close();
+    }
+    return true;
 };
 
 function handleTechnicalError() {
-    if (tg && typeof tg.sendData === 'function') {
-        tg.sendData(JSON.stringify({ action: "error", message: "technical_fault" }));
-        tg.close();
-    }
+    // Эта функция теперь может использоваться для ручных вызовов
+    const manualError = { action: "error", message: "manual_trigger" };
+    tg.sendData(JSON.stringify(manualError));
+    tg.close();
 }
 
 addressInput.addEventListener("input", () => {
