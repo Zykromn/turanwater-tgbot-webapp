@@ -167,22 +167,6 @@ label{
     grid-template-columns: repeat(3, 1fr);
     gap: 1em;
 }
-
-.success-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-.success-box {
-    background: white;
-    padding: 40px;
-    border-radius: 30px;
-    text-align: center;
-}
 .checkmark {
     font-size: 60px;
     color: var(--success);
@@ -204,13 +188,8 @@ label{
     border-radius: var(--radius-big);
 }
 
-.dev-container{
-    width: 100%;
-    margin-top: 10vh;
-
-    text-align: center;
-}
 .devmark{
+    margin-top: 10vh;
     width: 10%;
 }
 
