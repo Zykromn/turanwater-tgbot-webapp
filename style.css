@@ -40,7 +40,7 @@ input {
 
     border: 2px solid var(--content);
     border-radius: var(--radius-low);
-    font-size: 18px;
+    font-size: 20px;
     background-color: #ffffff;
 }
 input:focus {
@@ -65,13 +65,13 @@ input:checked + .slider:before {
 }
 h1 {
     margin: 0 0 14px;
-    font-size: 22px;
+    font-size: 24px;
 }
 label{
     margin-bottom: 7px;
     display: block;
 
-    font-size: 16px;
+    font-size: 18px;
 }
 
 
@@ -140,10 +140,10 @@ label{
     margin: 2vh;
 }
 .suggestion-item{
-    margin: 1vh 0;
+    margin: 2vh 0;
     padding: 1vh 2vw;
 
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
     border: 1px solid #002856;
     border-radius: var(--radius-big);

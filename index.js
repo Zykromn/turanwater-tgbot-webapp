@@ -36,7 +36,7 @@ addressInput.addEventListener("input", () => {
     clearTimeout(debounceTimer);
     const query = addressInput.value.trim();
 
-    if (query.length < 3) {
+    if (query.length < 2) {
         suggestionsBox.innerHTML = "";
         suggestionsBox.style.display = "none";
         return;
@@ -111,6 +111,7 @@ privateHouseCheckbox.addEventListener("change", () => {
         floorInput.value = "";
         apartmentInput.value = "";
     }
+});
 
 function validate() {
     const address = addressInput.value.trim();
@@ -165,4 +166,4 @@ document.addEventListener("click", (e) => {
     if (e.target !== addressInput) {
         suggestionsBox.style.display = "none";
     }
-});
+})
