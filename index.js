@@ -88,12 +88,29 @@ function renderSuggestions(results) {
             addressInput.value = item.title.text;
             suggestionsBox.innerHTML = "";
             suggestionsBox.style.display = "none";
-            if (!privateHouseCheckbox.checked) entranceInput.focus();
         };
 
         suggestionsBox.appendChild(div);
     });
 }
+
+privateHouseCheckbox.addEventListener("change", () => {
+    // Если чекбокс нажат (true) — скрываем (none), если нет — показываем (grid или block)
+    const displayStyle = privateHouseCheckbox.checked ? "none" : "grid";
+
+    // Скрываем/показываем контейнер с доп. полями
+    // Убедись, что в HTML эти три инпута обернуты в div с id="apartment_fields"
+    const apartmentFields = document.getElementById("apartment_fields");
+    if (apartmentFields) {
+        apartmentFields.style.display = displayStyle;
+    }
+
+    // Опционально: очищаем значения, если выбрали частный дом
+    if (privateHouseCheckbox.checked) {
+        entranceInput.value = "";
+        floorInput.value = "";
+        apartmentInput.value = "";
+    }
 
 function validate() {
     const address = addressInput.value.trim();
