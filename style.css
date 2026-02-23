@@ -150,6 +150,17 @@ label{
 
     cursor: pointer;
 }
+.suggestion-noaddress{
+    margin: 2vh 0;
+    padding: 1vh 3vw;
+
+    font-size: 24px;
+    font-weight: bold;
+    border: 1px solid #002856;
+    border-radius: var(--radius-big);
+
+    cursor: pointer;
+}
 ._accommodation {
     margin-top: 1vh;
     display: grid;
@@ -191,6 +202,16 @@ label{
     border: none;
     box-shadow: 0 12px 24px rgba(47, 109, 248, 0.3);
     border-radius: var(--radius-big);
+}
+
+.dev-container{
+    width: 100%;
+    margin-top: 10vh;
+
+    text-align: center;
+}
+.dev{
+    width: 10%;
 }
 
 

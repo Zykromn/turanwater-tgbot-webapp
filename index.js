@@ -1,7 +1,12 @@
+// Setuping TG WebApp
 const tg = window.Telegram.WebApp;
 tg.expand();
 
+
+
+// Params and DOM
 const BBOX = "69.3300,53.2500~69.4500,53.3300";
+let debounceTimer;
 
 const addressInput = document.getElementById("address");
 const suggestionsBox = document.getElementById("suggestions");
@@ -13,33 +18,36 @@ const bottlesInput = document.getElementById("bottles");
 const commentInput = document.getElementById("comment");
 const orderBtn = document.getElementById("order_btn");
 
-let debounceTimer;
 
-window.onerror = function(message, source, lineno, colno, error) {
+
+// Error interceptor
+window.onerror = function(message, source, lineno, colno) {
     const errorDetails = {
         action: "error",
-        error_type: "JS_EXCEPTION",
-        message: message,
-        line: lineno,
-        column: colno,
-        source: source ? source.split('/').pop() : "unknown"
+        _message: message,
+        _line: lineno,
+        _column: colno,
+        _source: source ? source.split('/').pop() : "unknown"
     };
 
-    // Отправляем детальный отчет боту
     if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.sendData(JSON.stringify(errorDetails));
         window.Telegram.WebApp.close();
     }
     return true;
 };
+function _error_log(message) {
+    const manualError = {
+        action: "error_log",
+        _message: message
+    };
 
-function handleTechnicalError() {
-    // Эта функция теперь может использоваться для ручных вызовов
-    const manualError = { action: "error", message: "manual_trigger" };
     tg.sendData(JSON.stringify(manualError));
-    tg.close();
 }
 
+
+
+// Targeted events
 addressInput.addEventListener("input", () => {
     clearTimeout(debounceTimer);
     const query = addressInput.value.trim();
@@ -54,7 +62,6 @@ addressInput.addEventListener("input", () => {
         fetchSuggestions(query);
     }, 200);
 });
-
 async function fetchSuggestions(query) {
     try {
         const url = `https://suggest-maps.yandex.ru/v1/suggest?apikey=a3fbaf22-d694-4200-98ed-6c3075db0c34&text=${encodeURIComponent(query)}&lang=ru_RU&types=geo&bbox=${BBOX}&strict_bounds=1`;
@@ -67,24 +74,16 @@ async function fetchSuggestions(query) {
         }
 
         const data = await response.json();
+
         renderSuggestions(data.results || []);
     } catch (error) {
-        console.error("API offline, allowing manual input");
+        _error_log(error)
+
         suggestionsBox.style.display = "none";
     }
 }
-
 function renderSuggestions(results) {
     suggestionsBox.innerHTML = "";
-
-    if (results.length === 0) {
-        suggestionsBox.style.display = "block";
-        const errorDiv = document.createElement("div");
-        errorDiv.className = "suggestion-error";
-        errorDiv.innerHTML = `<small style="color: #666;">Ваш адрес вне нашего реестра. Рекомендуем обратиться к оператору.</small>`;
-        suggestionsBox.appendChild(errorDiv);
-        return;
-    }
 
     suggestionsBox.style.display = "block";
     results.forEach(item => {
@@ -103,17 +102,13 @@ function renderSuggestions(results) {
 }
 
 privateHouseCheckbox.addEventListener("change", () => {
-    // Если чекбокс нажат (true) — скрываем (none), если нет — показываем (grid или block)
     const displayStyle = privateHouseCheckbox.checked ? "none" : "grid";
 
-    // Скрываем/показываем контейнер с доп. полями
-    // Убедись, что в HTML эти три инпута обернуты в div с id="apartment_fields"
     const apartmentFields = document.getElementById("apartment_fields");
     if (apartmentFields) {
         apartmentFields.style.display = displayStyle;
     }
 
-    // Опционально: очищаем значения, если выбрали частный дом
     if (privateHouseCheckbox.checked) {
         entranceInput.value = "";
         floorInput.value = "";
@@ -121,30 +116,40 @@ privateHouseCheckbox.addEventListener("change", () => {
     }
 });
 
+
+
+// Middlewares
 function validate() {
     const address = addressInput.value.trim();
     const bottles = parseInt(bottlesInput.value) || 0;
+    const isPrivate = privateHouseCheckbox.checked;
 
     if (!address || address.length < 5) {
-        tg.showAlert("Укажите корректный адрес.");
+        tg.showAlert("Пожалуйста, укажите верный адрес.");
         return false;
     }
 
-    if (bottles <= 0) {
-        tg.showAlert("Укажите количество бутылок.");
+    if (bottles <= 0 || bottles >= 10) {
+        tg.showAlert("Пожалуйста, укажите количество бутылей от 1 до 50. Для оптового заказа - обратитесь к нашему оператору.");
         return false;
     }
 
-    if (!privateHouseCheckbox.checked) {
+    if (!isPrivate) {
         const ent = entranceInput.value.trim();
         const fl = floorInput.value.trim();
         const ap = apartmentInput.value.trim();
 
         if (!ent || !fl || !ap) {
-            tg.showAlert("Заполните подъезд, этаж и квартиру.");
+            tg.showAlert("Пожалуйста, укажите данные адреса доставки.");
+            return false;
+        }
+
+        if (ent.length > 2 || fl.length > 2) {
+            tg.showAlert("Пожалуйста, укажите корректные адреса доставки.");
             return false;
         }
     }
+
     return true;
 }
 
@@ -156,9 +161,9 @@ orderBtn.addEventListener("click", () => {
         const data = {
             action: "order",
             street: addressInput.value.trim(),
-            entrance: isPrivate ? "Частный дом" : entranceInput.value,
+            entrance: isPrivate ? "1" : entranceInput.value,
             floor: isPrivate ? "1" : floorInput.value,
-            apartment: isPrivate ? "-" : apartmentInput.value,
+            apartment: isPrivate ? "1" : apartmentInput.value,
             bottles: bottlesInput.value,
             comment: commentInput.value.trim()
         };
@@ -166,7 +171,7 @@ orderBtn.addEventListener("click", () => {
         tg.sendData(JSON.stringify(data));
         tg.close();
     } catch (e) {
-        handleTechnicalError();
+        _error_log(e);
     }
 });
 
