@@ -15,9 +15,11 @@ const entranceInput = document.getElementById("entrance");
 const floorInput = document.getElementById("floor");
 const apartmentInput = document.getElementById("apartment");
 const bottlesInput = document.getElementById("bottles");
+const dateInput = document.getElementById("delivery_date");
+const noDateBox = document.getElementById("nodate");
+const handleBottleCheckbox = document.getElementById("handle_bottle");
 const commentInput = document.getElementById("comment");
 const orderBtn = document.getElementById("order_btn");
-
 
 
 // Error interceptor
@@ -36,13 +38,14 @@ window.onerror = function(message, source, lineno, colno) {
     }
     return true;
 };
-function _error_log(message) {
-    const manualError = {
-        action: "error_log",
-        _message: message
+function _Error(type, origin, error) {
+    const warning = {
+        action: type,
+        _origin: origin,
+        _error: error
     };
 
-    tg.sendData(JSON.stringify(manualError));
+    tg.sendData(JSON.stringify(warning));
 }
 
 
@@ -76,8 +79,8 @@ async function fetchSuggestions(query) {
         const data = await response.json();
 
         renderSuggestions(data.results || []);
-    } catch (error) {
-        _error_log(error)
+    } catch (e) {
+        _Error("warn", "F: fetchSuggestions", e)
 
         suggestionsBox.style.display = "none";
     }
@@ -116,12 +119,37 @@ privateHouseCheckbox.addEventListener("change", () => {
     }
 });
 
+function initDatePicker() {
+    const now = new Date();
+    let minDate = new Date();
 
+    if (now.getHours() >= 12) {
+        minDate.setDate(now.getDate() + 1);
+
+        noDateBox.style.display = "block";
+    }
+
+    const maxDate = new Date();
+    maxDate.setDate(minDate.getDate() + 7);
+
+    dateInput.min = formatDate(minDate);
+    dateInput.max = formatDate(maxDate);
+    dateInput.value = formatDate(minDate);
+}
+initDatePicker()
 
 // Middlewares
+function formatDate(date) {
+    return date.toISOString().split('T')[0];
+}
+
 function validate() {
     const address = addressInput.value.trim();
     const bottles = parseInt(bottlesInput.value) || 0;
+    const selectedDate = new Date(dateInput.value);
+    const minAllowed = new Date(dateInput.min);
+    const maxAllowed = new Date(dateInput.max);
+
     const isPrivate = privateHouseCheckbox.checked;
 
     if (!address || address.length < 5) {
@@ -131,6 +159,11 @@ function validate() {
 
     if (bottles <= 0 || bottles >= 10) {
         tg.showAlert("Пожалуйста, укажите количество бутылей от 1 до 50. Для оптового заказа - обратитесь к нашему оператору.");
+        return false;
+    }
+
+    if (!dateInput.value || selectedDate < minAllowed || selectedDate > maxAllowed) {
+        tg.showAlert("Выберите корректную дату доставки (не более недели вперед).");
         return false;
     }
 
@@ -158,20 +191,33 @@ orderBtn.addEventListener("click", () => {
         if (!validate()) return;
 
         const isPrivate = privateHouseCheckbox.checked;
+        const isWithHandle = handleBottleCheckbox.checked
+        let comment = "";
+
+        if (isPrivate){
+            comment += "[Частный дом. "
+        }
+
+        if (isWithHandle){
+            comment += "Бутыль с ручкой."
+        }
+
+        comment += `] ${commentInput.value.trim()}`
         const data = {
             action: "order",
-            street: addressInput.value.trim(),
-            entrance: isPrivate ? "1" : entranceInput.value,
-            floor: isPrivate ? "1" : floorInput.value,
-            apartment: isPrivate ? "1" : apartmentInput.value,
-            bottles: bottlesInput.value,
-            comment: commentInput.value.trim()
+            _amount: bottlesInput.value,
+            _street: addressInput.value.trim(),
+            _apartment: isPrivate ? "" : apartmentInput.value,
+            _entrance: isPrivate ? "" : entranceInput.value,
+            _floor: isPrivate ? "" : floorInput.value,
+            _date: dateInput.value,
+            _comment: comment
         };
 
         tg.sendData(JSON.stringify(data));
         tg.close();
     } catch (e) {
-        _error_log(e);
+        _Error("error", "", e);
     }
 });
 

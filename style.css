@@ -6,7 +6,7 @@
     --content: #1b3e80;
 
     --muted: #5c6f92;
-    --danger: #d92332;
+    --warn: rgba(255, 47, 64, 0.25);
     --success: #16865a;
 
     --shadow: 0 24px 30px rgba(25, 65, 135, 0.15);
@@ -167,9 +167,20 @@ label{
     grid-template-columns: repeat(3, 1fr);
     gap: 1em;
 }
-.checkmark {
-    font-size: 60px;
-    color: var(--success);
+
+._nodate{
+    display: none;
+
+    margin: 2vh 0;
+    padding: 1vh 3vw;
+
+    font-size: 18px;
+    font-weight: bold;
+    background-color: var(--warn);
+    border: 1px solid #002856;
+    border-radius: var(--radius-big);
+
+    cursor: pointer;
 }
 
 .order{
@@ -190,7 +201,7 @@ label{
 
 .devmark{
     margin-top: 10vh;
-    width: 10%;
+    width: 15%;
 }
 
 

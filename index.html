@@ -54,7 +54,18 @@
             <input type="number" id="bottles" min="1">
         </section>
 
+        <div class="form-unit">
+            <h1>Дата доставки</h1>
+            <input type="date" id="delivery_date">
+
+            <div class="_nodate" id="nodate">
+                ⚠️ Доставка после 12:00 принимается только на следующий день.
+            </div>
+        </div>
+
         <section class="form-unit">
+            <h1>Комментарий</h1>
+
             <div class="toggle">
                 <label class="switch">
                     <input type="checkbox" id="handle_bottle">
@@ -62,8 +73,6 @@
                 </label>
                 <span>Бутылка с ручкой</span>
             </div>
-
-            <h1>Комментарий</h1>
             <input type="text" id="comment">
         </section>
 
