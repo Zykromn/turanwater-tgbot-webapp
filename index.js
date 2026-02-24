@@ -9,9 +9,6 @@ const BBOX = "69.3300,53.2500~69.4500,53.3300";
 let debounceTimer;
 
 const urlParams = new URLSearchParams(window.location.search);
-// По умолчанию берем 1200, если вдруг articles не пробросили
-const EXCHANGE_PRICE = 1000;
-const PURCHASE_PRICE = 2000;
 const phoneInput = document.getElementById("phone");
 const addressInput = document.getElementById("address");
 const suggestionsBox = document.getElementById("suggestions");
@@ -20,13 +17,14 @@ const entranceInput = document.getElementById("entrance");
 const floorInput = document.getElementById("floor");
 const apartmentInput = document.getElementById("apartment");
 const bottlesInput = document.getElementById("bottles");
+const totalPriceDisplay = document.getElementById("total_price");
 const dateInput = document.getElementById("delivery_date");
 const noDateBox = document.getElementById("nodate");
 const commentInput = document.getElementById("comment");
 const orderBtn = document.getElementById("order_btn");
-const totalPriceDisplay = document.getElementById("total_price");
 
-let selectedProductId = 1001; // По умолчанию обмен
+let articles = {}
+let selectedProductId;
 
 
 // Error interceptor
@@ -58,6 +56,36 @@ function _Error(type, origin, error) {
 
 
 // Targeted events
+function autoFill() {
+    const exId = urlParams.get('ex_article');
+    const exPrice = urlParams.get('ex_price');
+    const puId = urlParams.get('pu_article');
+    const puPrice = urlParams.get('pu_price');
+
+    // 2. Заполняем объект артикулов
+    if (exId && exPrice) articles[exId] = parseInt(exPrice);
+    if (puId && puPrice) articles[puId] = parseInt(puPrice);
+
+    // 3. Привязываем ID к кнопкам динамически
+    const btnEx = document.getElementById("btn_exchange");
+    const btnPu = document.getElementById("btn_purchase");
+
+    if (btnEx) btnEx.dataset.id = exId;
+    if (btnPu) btnPu.dataset.id = puId;
+
+    selectedProductId = exId;
+
+    if (urlParams.get('phone')) phoneInput.value = urlParams.get('phone');
+
+    if (urlParams.get('addr')) addressInput.value = decodeURIComponent(urlParams.get('addr'));
+    if (urlParams.get('apt')) apartmentInput.value = urlParams.get('apt');
+    if (urlParams.get('ent')) entranceInput.value = urlParams.get('ent');
+    if (urlParams.get('fl')) floorInput.value = urlParams.get('fl');
+
+    updatePrice();
+}
+autoFill();
+
 addressInput.addEventListener("input", () => {
     clearTimeout(debounceTimer);
     const query = addressInput.value.trim();
@@ -126,6 +154,7 @@ privateHouseCheckbox.addEventListener("change", () => {
     }
 });
 
+
 function initDatePicker() {
     const now = new Date();
     let minDate = new Date();
@@ -145,15 +174,7 @@ function initDatePicker() {
 }
 initDatePicker()
 
-function autoFill() {
-    if (urlParams.get('phone')) phoneInput.value = urlParams.get('phone');
-    if (urlParams.get('addr')) addressInput.value = decodeURIComponent(urlParams.get('addr'));
-    if (urlParams.get('apt')) apartmentInput.value = urlParams.get('apt');
-    if (urlParams.get('ent')) entranceInput.value = urlParams.get('ent');
-    if (urlParams.get('fl')) floorInput.value = urlParams.get('fl');
 
-    updatePrice();
-}
 
 // Middlewares
 function formatDate(date) {
@@ -164,17 +185,16 @@ document.querySelectorAll('.type-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
-        selectedProductId = parseInt(this.dataset.id);
+
+        selectedProductId = this.dataset.id;
         updatePrice();
     });
 });
-
 function updatePrice() {
     const count = parseInt(bottlesInput.value) || 0;
-    const pricePerUnit = (selectedProductId === 1001) ? EXCHANGE_PRICE : PURCHASE_PRICE;
+    const pricePerUnit = articles[selectedProductId] || 0;
     totalPriceDisplay.textContent = (count * pricePerUnit).toLocaleString();
 }
-
 
 bottlesInput.addEventListener('input', updatePrice);
 
@@ -187,12 +207,12 @@ function validate() {
         tg.showAlert("Введите корректный номер телефона.");
         return false;
     }
-    if (address.length < 5) {
+    if (address.length < 4) {
         tg.showAlert("Укажите полный адрес.");
         return false;
     }
-    if (bottles <= 0 || bottles > 50) {
-        tg.showAlert("Укажите количество бутылей (1-50).");
+    if (bottles <= 0 || bottles > 10) {
+        tg.showAlert("Укажите количество бутылей (1-50). Для оптового заказа обатитесь к оператору.");
         return false;
     }
     return true;
@@ -202,10 +222,9 @@ orderBtn.addEventListener("click", () => {
     if (!validate()) return;
 
     const isPrivate = privateHouseCheckbox.checked;
-    const typeName = (selectedProductId === 1001) ? "Обмен" : "Покупка";
 
-    let comment = `[${typeName}] `;
-    if (isPrivate) comment += "Частный дом. ";
+    let comment = ``;
+    if (isPrivate) comment += "[Частный дом] ";
     comment += commentInput.value.trim();
 
     const data = {
@@ -217,7 +236,7 @@ orderBtn.addEventListener("click", () => {
         _entrance: isPrivate ? "" : entranceInput.value,
         _floor: isPrivate ? "" : floorInput.value,
         _date: dateInput.value,
-        _productId: selectedProductId, // Передаем ID товара (1001 или 1002)
+        _productId: selectedProductId,
         _comment: comment
     };
 
