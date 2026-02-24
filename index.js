@@ -192,10 +192,10 @@ orderBtn.addEventListener("click", () => {
 
         const isPrivate = privateHouseCheckbox.checked;
         const isWithHandle = handleBottleCheckbox.checked
-        let comment = "";
+        let comment = "[";
 
         if (isPrivate){
-            comment += "[Частный дом. "
+            comment += "Частный дом. "
         }
 
         if (isWithHandle){
