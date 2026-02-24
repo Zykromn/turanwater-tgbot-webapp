@@ -18,11 +18,12 @@
     <form class="form" id="order_form" novalidate>
 
         <section class="form-unit">
-            <h1>Адрес доставки</h1>
+            <h1>Данные клиента</h1>
+            <label>Телефон</label>
+            <input type="tel" id="phone" placeholder="+7 (7xx) xxx-xx-xx">
 
-            <label>Адрес</label>
+            <label style="margin-top: 10px;">Адрес</label>
             <input type="text" id="address" placeholder="Введите адрес доставки">
-
             <div id="suggestions"></div>
 
             <div class="toggle">
@@ -34,53 +35,44 @@
             </div>
 
             <div class="_accommodation" id="apartment_fields">
-                <div class="field">
-                    <label>Подъезд</label>
-                    <input type="number" id="entrance" min="1">
-                </div>
-                <div class="field">
-                    <label>Этаж</label>
-                    <input type="number" id="floor" min="1">
-                </div>
-                <div class="field">
-                    <label>Квартира</label>
-                    <input type="number" id="apartment" min="1">
-                </div>
+                <div class="field"><label>Подъезд</label><input type="number" id="entrance"></div>
+                <div class="field"><label>Этаж</label><input type="number" id="floor"></div>
+                <div class="field"><label>Квартира</label><input type="number" id="apartment"></div>
             </div>
         </section>
 
         <section class="form-unit">
-            <h1>Количество бутылей</h1>
-            <input type="number" id="bottles" min="1">
+            <h1>Заказ</h1>
+            <div class="order-type-container">
+                <label>Тип заказа</label>
+                <div class="type-switcher">
+                    <button type="button" class="type-btn active" data-id="1001" id="btn_exchange">Обмен</button>
+                    <button type="button" class="type-btn" data-id="1002" id="btn_purchase">Покупка</button>
+                </div>
+            </div>
+
+            <label style="margin-top: 10px;">Количество бутылей</label>
+            <input type="number" id="bottles" min="1" value="1">
+
+            <div class="price-display">
+                Итого: <span id="total_price">0</span> ₸
+            </div>
         </section>
 
         <div class="form-unit">
             <h1>Дата доставки</h1>
             <input type="date" id="delivery_date">
-
-            <div class="_nodate" id="nodate">
-                ⚠️ Доставка после 12:00 принимается только на следующий день.
+            <div class="_nodate" id="nodate" style="display:none;">
+                ⚠️ Доставка после 12:00 принимается на завтра.
             </div>
         </div>
 
         <section class="form-unit">
             <h1>Комментарий</h1>
-
-            <div class="toggle">
-                <label class="switch">
-                    <input type="checkbox" id="handle_bottle">
-                    <span class="slider"></span>
-                </label>
-                <span>Бутылка с ручкой</span>
-            </div>
-            <input type="text" id="comment">
+            <input type="text" id="comment" placeholder="Дополнительная информация">
         </section>
 
-        <button class="order" id="order_btn" type="button">
-            Заказать доставку
-        </button>
-
-        <img class="devmark" src="assets/logo_mark.png">
+        <button class="order" id="order_btn" type="button">Заказать доставку</button>
     </form>
 
 

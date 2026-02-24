@@ -8,6 +8,11 @@ tg.expand();
 const BBOX = "69.3300,53.2500~69.4500,53.3300";
 let debounceTimer;
 
+const urlParams = new URLSearchParams(window.location.search);
+// По умолчанию берем 1200, если вдруг articles не пробросили
+const EXCHANGE_PRICE = 1000;
+const PURCHASE_PRICE = 2000;
+const phoneInput = document.getElementById("phone");
 const addressInput = document.getElementById("address");
 const suggestionsBox = document.getElementById("suggestions");
 const privateHouseCheckbox = document.getElementById("private_house");
@@ -17,9 +22,11 @@ const apartmentInput = document.getElementById("apartment");
 const bottlesInput = document.getElementById("bottles");
 const dateInput = document.getElementById("delivery_date");
 const noDateBox = document.getElementById("nodate");
-const handleBottleCheckbox = document.getElementById("handle_bottle");
 const commentInput = document.getElementById("comment");
 const orderBtn = document.getElementById("order_btn");
+const totalPriceDisplay = document.getElementById("total_price");
+
+let selectedProductId = 1001; // По умолчанию обмен
 
 
 // Error interceptor
@@ -138,87 +145,84 @@ function initDatePicker() {
 }
 initDatePicker()
 
+function autoFill() {
+    if (urlParams.get('phone')) phoneInput.value = urlParams.get('phone');
+    if (urlParams.get('addr')) addressInput.value = decodeURIComponent(urlParams.get('addr'));
+    if (urlParams.get('apt')) apartmentInput.value = urlParams.get('apt');
+    if (urlParams.get('ent')) entranceInput.value = urlParams.get('ent');
+    if (urlParams.get('fl')) floorInput.value = urlParams.get('fl');
+
+    updatePrice();
+}
+
 // Middlewares
 function formatDate(date) {
     return date.toISOString().split('T')[0];
 }
 
+document.querySelectorAll('.type-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        selectedProductId = parseInt(this.dataset.id);
+        updatePrice();
+    });
+});
+
+function updatePrice() {
+    const count = parseInt(bottlesInput.value) || 0;
+    const pricePerUnit = (selectedProductId === 1001) ? EXCHANGE_PRICE : PURCHASE_PRICE;
+    totalPriceDisplay.textContent = (count * pricePerUnit).toLocaleString();
+}
+
+
+bottlesInput.addEventListener('input', updatePrice);
+
 function validate() {
+    const phone = phoneInput.value.trim();
     const address = addressInput.value.trim();
     const bottles = parseInt(bottlesInput.value) || 0;
-    const selectedDate = new Date(dateInput.value);
-    const minAllowed = new Date(dateInput.min);
-    const maxAllowed = new Date(dateInput.max);
 
-    const isPrivate = privateHouseCheckbox.checked;
-
-    if (!address || address.length < 5) {
-        tg.showAlert("Пожалуйста, укажите верный адрес.");
+    if (phone.length < 10) {
+        tg.showAlert("Введите корректный номер телефона.");
         return false;
     }
-
-    if (bottles <= 0 || bottles >= 10) {
-        tg.showAlert("Пожалуйста, укажите количество бутылей от 1 до 50. Для оптового заказа - обратитесь к нашему оператору.");
+    if (address.length < 5) {
+        tg.showAlert("Укажите полный адрес.");
         return false;
     }
-
-    if (!dateInput.value || selectedDate < minAllowed || selectedDate > maxAllowed) {
-        tg.showAlert("Выберите корректную дату доставки (не более недели вперед).");
+    if (bottles <= 0 || bottles > 50) {
+        tg.showAlert("Укажите количество бутылей (1-50).");
         return false;
     }
-
-    if (!isPrivate) {
-        const ent = entranceInput.value.trim();
-        const fl = floorInput.value.trim();
-        const ap = apartmentInput.value.trim();
-
-        if (!ent || !fl || !ap) {
-            tg.showAlert("Пожалуйста, укажите данные адреса доставки.");
-            return false;
-        }
-
-        if (ent.length > 2 || fl.length > 2) {
-            tg.showAlert("Пожалуйста, укажите корректные адреса доставки.");
-            return false;
-        }
-    }
-
     return true;
 }
 
 orderBtn.addEventListener("click", () => {
-    try {
-        if (!validate()) return;
+    if (!validate()) return;
 
-        const isPrivate = privateHouseCheckbox.checked;
-        const isWithHandle = handleBottleCheckbox.checked
-        let comment = "[";
+    const isPrivate = privateHouseCheckbox.checked;
+    const typeName = (selectedProductId === 1001) ? "Обмен" : "Покупка";
 
-        if (isPrivate){
-            comment += "Частный дом. "
-        }
+    let comment = `[${typeName}] `;
+    if (isPrivate) comment += "Частный дом. ";
+    comment += commentInput.value.trim();
 
-        if (isWithHandle){
-            comment += "Бутыль с ручкой."
-        }
+    const data = {
+        action: "order",
+        _amount: bottlesInput.value,
+        _street: addressInput.value.trim(),
+        _phone: phoneInput.value.trim(),
+        _apartment: isPrivate ? "" : apartmentInput.value,
+        _entrance: isPrivate ? "" : entranceInput.value,
+        _floor: isPrivate ? "" : floorInput.value,
+        _date: dateInput.value,
+        _productId: selectedProductId, // Передаем ID товара (1001 или 1002)
+        _comment: comment
+    };
 
-        comment += `] ${commentInput.value.trim()}`
-        const data = {
-            action: "order",
-            _amount: bottlesInput.value,
-            _street: addressInput.value.trim(),
-            _apartment: isPrivate ? "" : apartmentInput.value,
-            _entrance: isPrivate ? "" : entranceInput.value,
-            _floor: isPrivate ? "" : floorInput.value,
-            _date: dateInput.value,
-            _comment: comment
-        };
-
-        tg.sendData(JSON.stringify(data));
-        tg.close();
-    } catch (e) {
-        _Error("error", "", e);
-    }
+    tg.sendData(JSON.stringify(data));
+    tg.close();
 });
 
 document.addEventListener("click", (e) => {

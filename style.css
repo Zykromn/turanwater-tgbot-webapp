@@ -211,3 +211,34 @@ label{
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
+
+
+.type-switcher {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.type-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #00aaff;
+    background: transparent;
+    color: #00aaff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.type-btn.active {
+    background: #00aaff;
+    color: white;
+}
+
+.price-display {
+    margin-top: 15px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+}
