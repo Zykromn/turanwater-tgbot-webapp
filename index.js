@@ -68,8 +68,6 @@ function autoFill() {
         ent: urlParams.get('ent'),
         fl: urlParams.get('fl')
     };
-    tg.showAlert(`Параметры: ${params}`);
-    return
 
     const requiredParams =
         params.exId &&
@@ -77,7 +75,7 @@ function autoFill() {
         params.puId &&
         params.puPrice;
 
-    if (requiredParams) {
+    if (!requiredParams) {
             document.body.innerHTML = `    
             <div class="no-tg">
                 <h2>⚠️ Ошибка запуска</h2>
@@ -92,12 +90,20 @@ function autoFill() {
     const btnEx = document.getElementById("btn_exchange");
     const btnPu = document.getElementById("btn_purchase");
 
-    if (btnEx) btnEx.dataset.id = params.exId;
-    if (btnPu) btnPu.dataset.id = params.puId;
-
+    btnEx.dataset.id = params.exId;
+    btnPu.dataset.id = params.puId;
     selectedProductId = params.exId;
 
-    if (params.phone) phoneInput.value = params.phone;
+    if (params.phone) {
+        if (params.phone.startsWith("+7")) {
+            phoneInput.value = params.phone.substring(2);
+        } else if (params.phone.startsWith("8")) {
+            phoneInput.value = params.phone.substring(1);
+        } else {
+            phoneInput.value = ""
+        }
+    }
+
     if (params.addr) addressInput.value = decodeURIComponent(params.addr);
     if (params.apt) apartmentInput.value = params.apt;
     if (params.ent) entranceInput.value = params.ent;
