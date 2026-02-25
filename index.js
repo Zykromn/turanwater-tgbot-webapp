@@ -68,7 +68,8 @@ function autoFill() {
         ent: urlParams.get('ent'),
         fl: urlParams.get('fl')
     };
-    tg.showAlert(params);
+    tg.showAlert(`Параметры: ${params}`);
+    return
 
     const requiredParams =
         params.exId &&
