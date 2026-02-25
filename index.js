@@ -57,33 +57,53 @@ function _Error(type, origin, error) {
 
 // Targeted events
 function autoFill() {
-    const exId = urlParams.get('ex_article');
-    const exPrice = urlParams.get('ex_price');
-    const puId = urlParams.get('pu_article');
-    const puPrice = urlParams.get('pu_price');
+    const params = {
+        exId: urlParams.get('ex_article'),
+        exPrice: urlParams.get('ex_price'),
+        puId: urlParams.get('pu_article'),
+        puPrice: urlParams.get('pu_price'),
+        phone: urlParams.get('phone'),
+        addr: urlParams.get('addr'),
+        apt: urlParams.get('apt'),
+        ent: urlParams.get('ent'),
+        fl: urlParams.get('fl')
+    };
 
-    // 2. Заполняем объект артикулов
-    if (exId && exPrice) articles[exId] = parseInt(exPrice);
-    if (puId && puPrice) articles[puId] = parseInt(puPrice);
+    const requiredParams =
+        params.exId &&
+        params.exPrice &&
+        params.puId &&
+        params.puPrice;
 
-    // 3. Привязываем ID к кнопкам динамически
+    if (requiredParams) {
+            document.body.innerHTML = `    
+            <div class="no-tg">
+                <h2>⚠️ Ошибка запуска</h2>
+                <p> Пожалуйста, убедитель что вы открываете приложение через Telegram. </p>
+            </div>
+        `;
+    }
+
+    articles[params.exId] = parseInt(params.exPrice);
+    articles[params.puId] = parseInt(params.puPrice);
+
     const btnEx = document.getElementById("btn_exchange");
     const btnPu = document.getElementById("btn_purchase");
 
-    if (btnEx) btnEx.dataset.id = exId;
-    if (btnPu) btnPu.dataset.id = puId;
+    if (btnEx) btnEx.dataset.id = params.exId;
+    if (btnPu) btnPu.dataset.id = params.puId;
 
-    selectedProductId = exId;
+    selectedProductId = params.exId;
 
-    if (urlParams.get('phone')) phoneInput.value = urlParams.get('phone');
-
-    if (urlParams.get('addr')) addressInput.value = decodeURIComponent(urlParams.get('addr'));
-    if (urlParams.get('apt')) apartmentInput.value = urlParams.get('apt');
-    if (urlParams.get('ent')) entranceInput.value = urlParams.get('ent');
-    if (urlParams.get('fl')) floorInput.value = urlParams.get('fl');
+    if (params.phone) phoneInput.value = params.phone;
+    if (params.addr) addressInput.value = decodeURIComponent(params.addr);
+    if (params.apt) apartmentInput.value = params.apt;
+    if (params.ent) entranceInput.value = params.ent;
+    if (params.fl) floorInput.value = params.fl;
 
     updatePrice();
 }
+
 autoFill();
 
 addressInput.addEventListener("input", () => {
@@ -199,14 +219,9 @@ function updatePrice() {
 bottlesInput.addEventListener('input', updatePrice);
 
 function validate() {
-    const phone = phoneInput.value.trim();
     const address = addressInput.value.trim();
     const bottles = parseInt(bottlesInput.value) || 0;
 
-    if (phone.length < 10) {
-        tg.showAlert("Введите корректный номер телефона.");
-        return false;
-    }
     if (address.length < 4) {
         tg.showAlert("Укажите полный адрес.");
         return false;

@@ -19,10 +19,19 @@
 
         <section class="form-unit">
             <h1>Данные клиента</h1>
-            <label>Телефон</label>
-            <input type="tel" id="phone" placeholder="+7 (7xx) xxx-xx-xx">
 
-            <label style="margin-top: 10px;">Адрес</label>
+            <label for="phone">Телефон</label>
+            <div class="phone-box">
+                <span class="prefix"> +7 </span>
+                <input
+                        type="number"
+                        id="phone"
+                        placeholder="7004000740"
+                        oninput="if (this.value.length > 10) this.value = this.value.slice(0, 10);"
+                >
+            </div>
+
+            <label for="address">Адрес</label>
             <input type="text" id="address" placeholder="Введите адрес доставки">
             <div id="suggestions"></div>
 
@@ -35,29 +44,26 @@
             </div>
 
             <div class="_accommodation" id="apartment_fields">
-                <div class="field"><label>Подъезд</label><input type="number" id="entrance"></div>
-                <div class="field"><label>Этаж</label><input type="number" id="floor"></div>
-                <div class="field"><label>Квартира</label><input type="number" id="apartment"></div>
+                <div class="field"><label for="entrance">Подъезд</label><input type="number" id="entrance"></div>
+                <div class="field"><label for="floor">Этаж</label><input type="number" id="floor"></div>
+                <div class="field"><label for="apartment">Квартира</label><input type="number" id="apartment"></div>
             </div>
         </section>
 
         <section class="form-unit">
             <h1>Заказ</h1>
-            <div class="order-type-container">
-                <label>Тип заказа</label>
-                <div class="type-switcher">
-                    <div class="type-switcher">
-                        <button type="button" class="type-btn active" id="btn_exchange">Обмен</button>
-                        <button type="button" class="type-btn" id="btn_purchase">Покупка</button>
-                    </div>
-                </div>
+
+            <label for="type">Тип заказа</label>
+            <div class="type-switcher" id="type">
+                <button type="button" class="type-btn _left active" id="btn_exchange">Обмен</button>
+                <button type="button" class="type-btn _right" id="btn_purchase">Покупка</button>
             </div>
 
-            <label style="margin-top: 10px;">Количество бутылей</label>
+            <label for="bottles">Количество бутылей</label>
             <input type="number" id="bottles" min="1" value="1">
 
             <div class="price-display">
-                Итого: <span id="total_price">0</span> ₸
+                Стоймость: <span id="total_price">0</span> ₸
             </div>
         </section>
 
@@ -76,6 +82,10 @@
 
         <button class="order" id="order_btn" type="button">Заказать доставку</button>
     </form>
+
+    <footer>
+        <img class="devmark" src="assets/logo_mark.png" alt="">
+    </footer>
 
 
     <script src="index.js"></script>
