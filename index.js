@@ -97,7 +97,7 @@ function autoFill() {
     if (params.phone) {
         if (params.phone.startsWith("+7")) {
             phoneInput.value = params.phone.substring(2);
-        } else if (params.phone.startsWith("8")) {
+        } else if (params.phone.startsWith("7") || params.phone.startsWith("8")) {
             phoneInput.value = params.phone.substring(1);
         } else {
             phoneInput.value = ""
