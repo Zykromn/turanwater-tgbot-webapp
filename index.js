@@ -68,6 +68,7 @@ function autoFill() {
         ent: urlParams.get('ent'),
         fl: urlParams.get('fl')
     };
+    tg.showAlert(`${window.location.search}`);
 
     const requiredParams =
         params.exId &&
@@ -231,7 +232,7 @@ function validate() {
     const address = addressInput.value.trim();
     const bottles = parseInt(bottlesInput.value) || 0;
 
-    if (phoneInput < 10) {
+    if (phone.length < 10) {
         tg.showAlert("Укажите верный номер телефона.");
         return false;
     }
@@ -255,11 +256,13 @@ orderBtn.addEventListener("click", () => {
     if (isPrivate) comment += "[Частный дом] ";
     comment += commentInput.value.trim();
 
+    const phone = `7${phoneInput.value.trim()}`
+
     const data = {
         action: "order",
         _amount: bottlesInput.value,
         _street: addressInput.value.trim(),
-        _phone: phoneInput.value.trim(),
+        _phone: phone,
         _apartment: isPrivate ? "" : apartmentInput.value,
         _entrance: isPrivate ? "" : entranceInput.value,
         _floor: isPrivate ? "" : floorInput.value,
