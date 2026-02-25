@@ -32,8 +32,6 @@ window.onerror = function(message, source, lineno, colno) {
     const errorDetails = {
         action: "error",
         _message: message,
-        _line: lineno,
-        _column: colno,
         _source: source ? source.split('/').pop() : "unknown"
     };
 
@@ -46,7 +44,7 @@ window.onerror = function(message, source, lineno, colno) {
 function _Error(type, origin, error) {
     const warning = {
         action: type,
-        _origin: origin,
+        _source: origin,
         _error: error
     };
 
@@ -259,14 +257,14 @@ orderBtn.addEventListener("click", () => {
 
     const data = {
         action: "order",
+        _article: selectedProductId,
         _amount: bottlesInput.value,
-        _street: addressInput.value.trim(),
         _phone: phone,
+        _address: addressInput.value.trim(),
+        _date: dateInput.value,
         _apartment: isPrivate ? "" : apartmentInput.value,
         _entrance: isPrivate ? "" : entranceInput.value,
         _floor: isPrivate ? "" : floorInput.value,
-        _date: dateInput.value,
-        _productId: selectedProductId,
         _comment: comment
     };
 
