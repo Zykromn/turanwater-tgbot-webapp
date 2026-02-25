@@ -227,9 +227,14 @@ function updatePrice() {
 bottlesInput.addEventListener('input', updatePrice);
 
 function validate() {
+    const phone = phoneInput.value.trim();
     const address = addressInput.value.trim();
     const bottles = parseInt(bottlesInput.value) || 0;
 
+    if (phoneInput < 10) {
+        tg.showAlert("Укажите верный номер телефона.");
+        return false;
+    }
     if (address.length < 4) {
         tg.showAlert("Укажите полный адрес.");
         return false;
