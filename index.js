@@ -1,7 +1,28 @@
 // Setuping TG WebApp
 const tg = window.Telegram.WebApp;
 tg.expand();
+tg.ready();
+tg.setHeaderColor('#e7efff');
 
+
+// Languages and regions
+const currentPath = window.location.pathname;
+const currentLang = currentPath.includes('/kz/') ? 'kz' : 'ru';
+const i18n = {
+    ru: {
+        errPhone: "Укажите верный номер телефона.",
+        errAddress: "Укажите полный адрес.",
+        errBottles: "Укажите количество бутылей (1-50). Для оптового заказа обратитесь к оператору.",
+        privateHouseComment: "[Частный дом] "
+    },
+    kz: {
+        errPhone: "Жарамды телефон нөмірін көрсетіңіз.",
+        errAddress: "Толық мекенжайды көрсетіңіз.",
+        errBottles: "Бөтелкелер санын көрсетіңіз (1-50). Көтерме тапсырыс үшін операторға хабарласыңыз.",
+        privateHouseComment: "[Жер үй] "
+    }
+};
+const loc = i18n[currentLang];
 
 
 // Params and DOM
@@ -41,19 +62,18 @@ window.onerror = function(message, source, lineno, colno) {
     }
     return true;
 };
+
 function _Error(type, origin, error) {
     const warning = {
         action: type,
         _source: origin,
-        _error: error
+        _error: String(error)
     };
-
     tg.sendData(JSON.stringify(warning));
 }
 
 
-
-// Targeted events
+// Logic
 function autoFill() {
     const params = {
         exId: urlParams.get('ex_article'),
@@ -67,19 +87,16 @@ function autoFill() {
         fl: urlParams.get('fl')
     };
 
-    const requiredParams =
-        params.exId &&
-        params.exPrice &&
-        params.puId &&
-        params.puPrice;
+    const requiredParams = params.exId && params.exPrice && params.puId && params.puPrice;
 
     if (!requiredParams) {
-            document.body.innerHTML = `    
+        document.body.innerHTML = `    
             <div class="no-tg">
-                <h2>⚠️ Ошибка запуска</h2>
-                <p> Пожалуйста, убедитель что вы открываете приложение через Telegram. </p>
+                <h2>⚠️ Ошибка / Қате</h2>
+                <p>${loc.noTgWarning}</p>
             </div>
         `;
+        return;
     }
 
     articles[params.exId] = parseInt(params.exPrice);
@@ -93,13 +110,7 @@ function autoFill() {
     selectedProductId = params.exId;
 
     if (params.phone) {
-        if (params.phone.startsWith("+7")) {
-            phoneInput.value = params.phone.substring(2);
-        } else if (params.phone.startsWith("7") || params.phone.startsWith("8")) {
-            phoneInput.value = params.phone.substring(1);
-        } else {
-            phoneInput.value = ""
-        }
+        phoneInput.value = params.phone.replace(/\D/g, '').slice(-10); // Надежная очистка от +7 и 8
     }
 
     if (params.addr) addressInput.value = decodeURIComponent(params.addr);
@@ -109,7 +120,6 @@ function autoFill() {
 
     updatePrice();
 }
-
 autoFill();
 
 addressInput.addEventListener("input", () => {
@@ -126,10 +136,10 @@ addressInput.addEventListener("input", () => {
         fetchSuggestions(query);
     }, 200);
 });
+
 async function fetchSuggestions(query) {
     try {
         const url = `https://suggest-maps.yandex.ru/v1/suggest?apikey=a3fbaf22-d694-4200-98ed-6c3075db0c34&text=${encodeURIComponent(query)}&lang=ru_RU&types=geo&bbox=${BBOX}&strict_bounds=1`;
-
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -138,24 +148,24 @@ async function fetchSuggestions(query) {
         }
 
         const data = await response.json();
-
         renderSuggestions(data.results || []);
     } catch (e) {
-        _Error("warn", "F: fetchSuggestions", e)
-
+        _Error("warn", "F: fetchSuggestions", e);
         suggestionsBox.style.display = "none";
     }
 }
+
 function renderSuggestions(results) {
     suggestionsBox.innerHTML = "";
-
     suggestionsBox.style.display = "block";
+
     results.forEach(item => {
         const div = document.createElement("div");
         div.className = "suggestion-item";
         div.textContent = item.title.text;
 
         div.onclick = () => {
+            tg.HapticFeedback.selectionChanged();
             addressInput.value = item.title.text;
             suggestionsBox.innerHTML = "";
             suggestionsBox.style.display = "none";
@@ -165,10 +175,16 @@ function renderSuggestions(results) {
     });
 }
 
+document.addEventListener("click", (e) => {
+    if (e.target !== addressInput) {
+        suggestionsBox.style.display = "none";
+    }
+});
+
 privateHouseCheckbox.addEventListener("change", () => {
     const displayStyle = privateHouseCheckbox.checked ? "none" : "grid";
-
     const apartmentFields = document.getElementById("apartment_fields");
+
     if (apartmentFields) {
         apartmentFields.style.display = displayStyle;
     }
@@ -180,6 +196,24 @@ privateHouseCheckbox.addEventListener("change", () => {
     }
 });
 
+privateHouseCheckbox.addEventListener("change", () => {
+    const displayStyle = privateHouseCheckbox.checked ? "none" : "grid";
+    const apartmentFields = document.getElementById("apartment_fields");
+
+    if (apartmentFields) {
+        apartmentFields.style.display = displayStyle;
+    }
+
+    if (privateHouseCheckbox.checked) {
+        entranceInput.value = "";
+        floorInput.value = "";
+        apartmentInput.value = "";
+    }
+});
+
+function formatDate(date) {
+    return date.toISOString().split('T')[0];
+}
 
 function initDatePicker() {
     const now = new Date();
@@ -187,8 +221,9 @@ function initDatePicker() {
 
     if (now.getHours() >= 12) {
         minDate.setDate(now.getDate() + 1);
-
-        noDateBox.style.display = "block";
+        if (noDateBox) noDateBox.style.display = "block";
+    } else {
+        if (noDateBox) noDateBox.style.display = "none";
     }
 
     const maxDate = new Date();
@@ -198,17 +233,11 @@ function initDatePicker() {
     dateInput.max = formatDate(maxDate);
     dateInput.value = formatDate(minDate);
 }
-initDatePicker()
-
-
-
-// Middlewares
-function formatDate(date) {
-    return date.toISOString().split('T')[0];
-}
+initDatePicker();
 
 document.querySelectorAll('.type-btn').forEach(btn => {
     btn.addEventListener('click', function() {
+        tg.HapticFeedback.selectionChanged(); // Виброотклик
         document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
 
@@ -216,6 +245,7 @@ document.querySelectorAll('.type-btn').forEach(btn => {
         updatePrice();
     });
 });
+
 function updatePrice() {
     const count = parseInt(bottlesInput.value) || 0;
     const pricePerUnit = articles[selectedProductId] || 0;
@@ -230,15 +260,18 @@ function validate() {
     const bottles = parseInt(bottlesInput.value) || 0;
 
     if (phone.length < 10) {
-        tg.showAlert("Укажите верный номер телефона.");
+        tg.HapticFeedback.notificationOccurred('error');
+        tg.showAlert(loc.errPhone);
         return false;
     }
     if (address.length < 4) {
-        tg.showAlert("Укажите полный адрес.");
+        tg.HapticFeedback.notificationOccurred('error');
+        tg.showAlert(loc.errAddress);
         return false;
     }
-    if (bottles <= 0 || bottles > 10) {
-        tg.showAlert("Укажите количество бутылей (1-50). Для оптового заказа обатитесь к оператору.");
+    if (bottles <= 0 || bottles > 50) {
+        tg.HapticFeedback.notificationOccurred('error');
+        tg.showAlert(loc.errBottles);
         return false;
     }
     return true;
@@ -247,13 +280,17 @@ function validate() {
 orderBtn.addEventListener("click", () => {
     if (!validate()) return;
 
+    tg.HapticFeedback.impactOccurred('medium'); // Виброотклик успеха
+
     const isPrivate = privateHouseCheckbox.checked;
 
     let comment = ``;
-    if (isPrivate) comment += "[Частный дом] ";
+    if (isPrivate) comment += loc.privateHouseComment; // Мультиязычный тег
     comment += commentInput.value.trim();
 
-    const phone = `7${phoneInput.value.trim()}`
+    // Защита: отправляем в базу только цифры
+    const cleanPhone = phoneInput.value.replace(/\D/g, '');
+    const phone = `7${cleanPhone}`;
 
     const data = {
         action: "order",
@@ -265,15 +302,9 @@ orderBtn.addEventListener("click", () => {
         _apartment: isPrivate ? "" : apartmentInput.value,
         _entrance: isPrivate ? "" : entranceInput.value,
         _floor: isPrivate ? "" : floorInput.value,
-        _comment: comment
+        _comment: comment.trim()
     };
 
     tg.sendData(JSON.stringify(data));
     tg.close();
 });
-
-document.addEventListener("click", (e) => {
-    if (e.target !== addressInput) {
-        suggestionsBox.style.display = "none";
-    }
-})
