@@ -248,7 +248,7 @@ label{
     font-size: 24px;
     color: #ffffff;
     font-weight: bold;
-    background: var(--accent2);
+    background: var(--content);
     border: none;
     box-shadow: 0 12px 24px rgba(47, 109, 248, 0.3);
     border-radius: var(--radius-big);

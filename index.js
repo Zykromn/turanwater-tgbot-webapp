@@ -2,7 +2,6 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
-tg.setHeaderColor('#e7efff');
 
 
 // Languages and regions
